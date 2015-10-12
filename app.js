@@ -1,24 +1,58 @@
 var state = {};
 
+var CONTACT_TEMPLATE = {
+	name: "",
+	email: "",
+	description: "",
+	errors: {}
+};
+
+/* Actions */
 function updateNewContact(contact) {
-	setState({
+	updateState({
 		newContact: contact
 	});
 }
 
-function setState(changes) {
-	console.log(changes);
-	
+function submitNewContact() {
+	var contact = Object.assign({}, state.newContact, {
+		key: state.contacts.length + 1,
+		errors: {}
+	});
+
+	if (!/.+@.+\..+/.test(contact.email)) {
+		contact.errors.email = ["Please enter your new contact's email"];
+	}
+
+	if(!contact.name){
+		contact.errors.name = ["Please enter your new contact's name"];
+	}
+
+	if (Object.keys(contact.errors).length > 0) {
+		return updateState({
+			newContact: contact
+		});
+	}
+
+	updateState({
+		contacts: state.contacts.concat(contact),
+		newContact: CONTACT_TEMPLATE
+	});
+}
+
+function updateState(changes) {
 	Object.assign(state, changes);
 
 	var props = Object.assign({}, state, {
-		onNewContactChange: updateNewContact
+		updateNewContact: updateNewContact,
+		submitNewContact: submitNewContact
 	});
 
+	console.log('rendering', state);
 	ReactDOM.render(React.createElement(ContactView, props), document.getElementById('react-app'));
 }
 
-setState({
+updateState({
 	contacts: [{
 		key: 1,
 		name: "James K Nelson",
@@ -29,9 +63,5 @@ setState({
 		name: "Jim",
 		email: "jim@example.com"
 	}],
-	newContact: {
-		name: "",
-		email: "",
-		description: ""
-	},
+	newContact: CONTACT_TEMPLATE,
 });
